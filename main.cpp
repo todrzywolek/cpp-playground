@@ -7,31 +7,39 @@
 #include <iostream>
 
 BOOL set_path(TCHAR* path);
-HANDLE find_files(TCHAR* szDir, WIN32_FIND_DATA* ffd);
-int delete_files(TCHAR* szDir);
+HANDLE find_files(const TCHAR* szDir, WIN32_FIND_DATA* ffd);
+int delete_files(const TCHAR* path_to_folder, HANDLE* handle, WIN32_FIND_DATA* ffd);
 
 int main ()
 {
     // empty path
     TCHAR path[MAX_PATH];
+
+    HANDLE hfind = INVALID_HANDLE_VALUE;
+    WIN32_FIND_DATA ffd;
+
+
     // set path to Program Data and check if succeeded
     if ( set_path(path) )
     {
         puts( "Sciezka ustalona!" );
         // add path to FluidDesk folder
         PathAppend(path, TEXT("FluidDesk"));
-
-
-
-
-
-        int result = delete_files(szPath);
-        std::cout << "Error= " << result;
+        // handle to files
+        hfind = find_files(path, &ffd);
+        // check if files are found
+        if (hfind != INVALID_HANDLE_VALUE)
+        {
+            delete_files(path, &hfind, &ffd);
+        }
+        else
+            puts("No inis in folder!");
     }
     else
-        puts( "Path not found" );
+        puts( "Path cannot be set" );
 
-  return 0;
+    FindClose(hfind);
+    return 0;
 }
 
 BOOL set_path(TCHAR* path)
@@ -45,54 +53,47 @@ BOOL set_path(TCHAR* path)
 
 
 
-int delete_files(TCHAR* szDir)
+int delete_files(const TCHAR* path_to_folder, HANDLE* handle, WIN32_FIND_DATA* ffd)
 {
-    HANDLE hfind = INVALID_HANDLE_VALUE;
-    WIN32_FIND_DATA ffd;
+    TCHAR file_path[MAX_PATH];
     DWORD dwerror;
 
-    hfind = find_files(szDir, &ffd);
-
-    TCHAR szPath[MAX_PATH];
-
-    while (FindNextFile(hfind, &ffd) != 0 and GetLastError() != ERROR_PATH_NOT_FOUND);
+    do
     {
-        printf(TEXT("  %s <file>\n"), ffd.cFileName);
-        _tcscpy(szPath, szDir);
-        PathAppend(szPath, ffd.cFileName);
-        puts(szPath);
-        if (DeleteFile(szPath))
+        printf(TEXT("  %s <file>\n"), ffd->cFileName);
+        _tcscpy(file_path, path_to_folder);
+        PathAppend(file_path, ffd->cFileName);
+        puts(file_path);
+        if (DeleteFile(file_path))
             puts("File deleted");
         else
             puts("File not found");
     }
+    while (FindNextFile(*handle, ffd) != 0);
 
     dwerror = GetLastError();
     if (dwerror != ERROR_NO_MORE_FILES)
     {
         puts("Error");
     }
-
-    FindClose(hfind);
     return dwerror;
 
 }
 
 
-HANDLE find_files(TCHAR* szDir, WIN32_FIND_DATA* ffd)
+HANDLE find_files(const TCHAR* path, WIN32_FIND_DATA* ffd)
 {
-    TCHAR szPath[MAX_PATH];
-    _tcscpy(szPath, szDir);
-    PathAppend(szPath, TEXT("*.ini"));
-    HANDLE hfind = FindFirstFile(szPath, ffd);
-    puts(szPath);
+    TCHAR search_path[MAX_PATH];
+
+    // copy path string
+    _tcscpy(search_path, path);
+    // set search_path string to value that needs to be searched
+    PathAppend(search_path, TEXT("*.ini"));
+    // find all ini files in folder
+    HANDLE hfind = FindFirstFile(search_path, ffd);
 
     if (INVALID_HANDLE_VALUE == hfind){
-        puts("BBBBBB");
+        puts("INVALID_HANDLE_VALUE");
     }
     return hfind;
 }
-
-
-
-
