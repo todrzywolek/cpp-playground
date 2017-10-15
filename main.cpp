@@ -21,7 +21,7 @@ int main ()
         puts( "Udalo sie!" );
         PathAppend(szPath, TEXT("FluidDesk"));
 
-        delete_inis(szPath);
+        delete_files(szPath);
 
     }
     else
@@ -56,7 +56,7 @@ int delete_files(TCHAR* szDir)
     HANDLE hfind = INVALID_HANDLE_VALUE;
     WIN32_FIND_DATA ffd;
 
-    hfind = find_inis(szDir, &ffd);
+    hfind = find_files(szDir, &ffd);
 
     TCHAR szPath[MAX_PATH];
 
