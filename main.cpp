@@ -1,4 +1,7 @@
-/* remove example: remove myfile.txt */
+/*
+Author: Tomasz Odrzywolek
+Simple file delete program based on MS interfaces
+ */
 #include <stdio.h>
 #include <windows.h>
 #include <shlobj.h>
@@ -26,7 +29,7 @@ int main ()
     {
         puts( "Sciezka ustalona!" );
         // add path to FluidDesk folder
-        PathAppend(path, TEXT("FluidDesk"));
+        PathAppend(path, TEXT("Fluid Desk Sp. z o.o"));
         // handle to files
         if (allow_work(path, 3) )
         {
