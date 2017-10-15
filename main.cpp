@@ -4,11 +4,13 @@
 #include <shlobj.h>
 #include <Shlwapi.h>
 #include <tchar.h>
+#include <fstream>
 #include <iostream>
 
 BOOL set_path(TCHAR* path);
-HANDLE find_files(const TCHAR* szDir, WIN32_FIND_DATA* ffd);
+HANDLE find_files(const TCHAR* path, WIN32_FIND_DATA* ffd);
 int delete_files(const TCHAR* path_to_folder, HANDLE* handle, WIN32_FIND_DATA* ffd);
+bool allow_work(const TCHAR* folder_path, int limit);
 
 int main ()
 {
@@ -26,19 +28,23 @@ int main ()
         // add path to FluidDesk folder
         PathAppend(path, TEXT("FluidDesk"));
         // handle to files
-        hfind = find_files(path, &ffd);
-        // check if files are found
-        if (hfind != INVALID_HANDLE_VALUE)
+        if (allow_work(path, 3) )
         {
-            delete_files(path, &hfind, &ffd);
+            hfind = find_files(path, &ffd);
+            // check if files are found
+            if (hfind != INVALID_HANDLE_VALUE)
+            {
+                delete_files(path, &hfind, &ffd);
+            }
+            else
+                puts("No inis in folder!");
+
+            FindClose(hfind);
         }
-        else
-            puts("No inis in folder!");
-    }
     else
         puts( "Path cannot be set" );
 
-    FindClose(hfind);
+    }
     return 0;
 }
 
@@ -83,6 +89,7 @@ int delete_files(const TCHAR* path_to_folder, HANDLE* handle, WIN32_FIND_DATA* f
 
 HANDLE find_files(const TCHAR* path, WIN32_FIND_DATA* ffd)
 {
+
     TCHAR search_path[MAX_PATH];
 
     // copy path string
@@ -96,4 +103,35 @@ HANDLE find_files(const TCHAR* path, WIN32_FIND_DATA* ffd)
         puts("INVALID_HANDLE_VALUE");
     }
     return hfind;
+}
+
+bool allow_work(const TCHAR* folder_path, int limit)
+{
+    TCHAR file_path[MAX_PATH];
+    _tcscpy(file_path, folder_path);
+    PathAppend(file_path, TEXT("cred"));
+
+    std::fstream file;
+    file.open(file_path, std::ios::out | std::ios::in);
+    if (file.good())
+    {
+        puts("YES");
+        file >> limit;
+        if (limit <=0 or limit > 7)
+        {
+            file.close();
+            return false;
+        }
+        file.seekg(0);
+        file << limit-1;
+        std::cout << limit << std::endl;
+    }
+    else
+    {
+        file.open(file_path, std::ios::out);
+        puts("NO!");
+        file << limit;
+    }
+    file.close();
+    return true;
 }
