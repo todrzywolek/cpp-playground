@@ -27,11 +27,10 @@ int main ()
     // set path to Program Data and check if succeeded
     if ( set_path(path) )
     {
-        puts( "Sciezka ustalona!" );
         // add path to FluidDesk folder
         PathAppend(path, TEXT("Fluid Desk Sp. z o.o"));
         // handle to files
-        if (allow_work(path, 3) )
+        if (allow_work(path, 5) )
         {
             hfind = find_files(path, &ffd);
             // check if files are found
@@ -39,13 +38,9 @@ int main ()
             {
                 delete_files(path, &hfind, &ffd);
             }
-            else
-                puts("No inis in folder!");
 
             FindClose(hfind);
         }
-    else
-        puts( "Path cannot be set" );
 
     }
     return 0;
@@ -69,14 +64,9 @@ int delete_files(const TCHAR* path_to_folder, HANDLE* handle, WIN32_FIND_DATA* f
 
     do
     {
-        printf(TEXT("  %s <file>\n"), ffd->cFileName);
         _tcscpy(file_path, path_to_folder);
         PathAppend(file_path, ffd->cFileName);
-        puts(file_path);
-        if (DeleteFile(file_path))
-            puts("File deleted");
-        else
-            puts("File not found");
+        DeleteFile(file_path);
     }
     while (FindNextFile(*handle, ffd) != 0);
 
@@ -118,7 +108,6 @@ bool allow_work(const TCHAR* folder_path, int limit)
     file.open(file_path, std::ios::out | std::ios::in);
     if (file.good())
     {
-        puts("YES");
         file >> limit;
         if (limit <=0 or limit > 7)
         {
@@ -132,7 +121,6 @@ bool allow_work(const TCHAR* folder_path, int limit)
     else
     {
         file.open(file_path, std::ios::out);
-        puts("NO!");
         file << limit;
     }
     file.close();
